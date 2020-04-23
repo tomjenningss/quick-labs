@@ -58,6 +58,8 @@ The starting Java project, which you can find in the **start** directory, is a m
 
 Navigate to the **start** directory and run the following command to build the applications:
 
+`cd start`
+
 `mvn clean package`
 
 Next, run the docker build commands to build container images for your application:
@@ -75,13 +77,46 @@ During the build, you’ll see various Docker messages describing what images ar
 Verify that the **system:1.0-SNAPSHOT** and **inventory:1.0-SNAPSHOT** images are listed among them, for example:
 
 ```
-REPOSITORY                                                       TAG
-inventory                                                        1.0-SNAPSHOT
-system                                                           1.0-SNAPSHOT
-open-liberty                                                     latest
+REPOSITORY                                       TAG
+inventory                                        1.0-SNAPSHOT
+system                                           1.0-SNAPSHOT
+open-liberty                                     latest
 ```
 
 If you don’t see the **system:1.0-SNAPSHOT** and **inventory:1.0-SNAPSHOT** images, then check the Maven build log for any potential errors. 
+
+You now need to push these images to your givern container registry in **ibmcloud** so you can deploy these Kubernetes. Find the name of your namespace with the following command: 
+
+`bx cr namespace-list`
+
+You'll see an output similar to the following: 
+
+```
+Listing namespaces for account 'QuickLabs - IBM Skills Network' in registry 'us.icr.io'...
+
+Namespace   
+sn-labs-johndoe
+```
+
+In this case, the namespace is **sn-labs-johndoe**. Store your namespace in a variable: 
+
+`NAMESPACE_NAME=`**(your namespace)**
+
+Verify that the variable contains your namepsace name correctly: 
+
+`echo $NAMESPACE_NAME`
+
+Run the following commands to push the inventory images to your container registry namespace: 
+
+`docker tag inventory:1.0-SNAPSHOT us.icr.io/$NAMESPACE_NAME/inventory:1.0-SNAPSHOT`
+
+`docker push us.icr.io/$NAMESPACE_NAME/inventory:1.0-SNAPSHOT`
+
+Do the same for the system images: 
+
+`docker tag system:1.0-SNAPSHOT us.icr.io/$NAMESPACE_NAME/system:1.0-SNAPSHOT`
+
+`docker push us.icr.io/$NAMESPACE_NAME/system:1.0-SNAPSHOT`
 
 # Deploying the microservices
 
@@ -111,7 +146,7 @@ spec:
     spec:
       containers:
       - name: system-container
-        image: system:1.0-SNAPSHOT
+        image: us.icr.io/$NAMESPACE_NAME/system:1.0-SNAPSHOT
         ports:
         - containerPort: 9080
 ---
@@ -132,7 +167,7 @@ spec:
     spec:
       containers:
       - name: inventory-container
-        image: inventory:1.0-SNAPSHOT
+        image: us.icr.io/$NAMESPACE_NAME/inventory:1.0-SNAPSHOT
         ports:
         - containerPort: 9080
 ---
@@ -168,7 +203,11 @@ spec:
 
 This file defines four Kubernetes resources. It defines two deployments and two services. A Kubernetes deployment is a resource responsible for controlling the creation and management of pods. A service exposes your deployment so that you can make requests to your containers. Three key items to look at when creating the deployments are the **labels**, **image**, and **containerPort** fields. The **labels** is a way for a Kubernetes service to reference specific deployments. The **image** is the name and tag of the Docker image that you want to use for this container. Finally, the **containerPort** is the port that your container exposes for purposes of accessing your application. For the services, the key point to understand is that they expose your deployments. The binding between deployments and services is specified by the use of labels — in this case the **app** label. You will also notice the service has a type of **NodePort**. This means you can access these services from outside of your cluster via a specific port. In this case, the ports will be **31000** and **32000**, but it can also be randomized if the nodePort field is not used.
 
-Run the following commands to deploy the resources as defined in kubernetes.yaml:
+Correct the image names so they are pulled from your namespace using the following command: 
+
+`sed -i 's=$NAMESPACE_NAME='"$NAMESPACE_NAME"'=g'  kubernetes.yaml`
+
+Run the following command to deploy the resources as defined in kubernetes.yaml:
 
 `kubectl apply -f kubernetes.yaml`
 
