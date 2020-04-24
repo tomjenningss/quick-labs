@@ -524,19 +524,19 @@ Finally, use the following script to stop the application:
 
 # Deploying the application on OpenShift
 
-Generate the \*.war file for each service:
 
-```
-cd ../
-mvn package
-```
+Firstly, create a new binary build
 
-Step 2: Create a new binary build
-```
-oc new-build --name=rest-quicklab --binary --strategy=docker
-```
+`cd service`
 
-Step 3: Start the binary build using current directory as binary input for the build
+`oc new-build --name=mp-service --binary --strategy=docker`
+
+`cd ../inventory`
+
+`oc new-build --name=mp-inventory --binary --strategy=docker`
+
+Start the binary build using current directory as binary input for the build
+
 ```
 oc start-build rest-quicklab --from-dir=.
 ```
