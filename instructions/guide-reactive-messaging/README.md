@@ -47,7 +47,7 @@ Open **SystemService.java** by navigating to
 Double click on **SystemService.java** to open and add the Java code.
 
 ```java
-package io.openliberty.guides.system;
+package main.java.io.openliberty.guides.system;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.OperatingSystemMXBean;
@@ -180,14 +180,14 @@ public class InventoryResource {
     }
 
     @Incoming("systemLoad")
-    public void updateStatus(SystemLoad s)  {
-        String hostId = s.hostId;
-        if (manager.getSystem(hostId).isPresent()) {
-            manager.updateCpuStatus(hostId, s.loadAverage);
-            logger.info("Host " + hostId + " was updated: " + s);
+    public void updateStatus(SystemLoad sl)  {
+        String hostname = sl.hostname;
+        if (manager.getSystem(hostname).isPresent()) {
+            manager.updateCpuStatus(hostname, sl.loadAverage);
+            logger.info("Host " + hostname + " was updated: " + sl);
         } else {
-            manager.addSystem(hostId, s.loadAverage);
-            logger.info("Host " + hostId + " was added: " + s);
+            manager.addSystem(hostname, sl.loadAverage);
+            logger.info("Host " + hostname + " was added: " + sl);
         }
     }
 }
