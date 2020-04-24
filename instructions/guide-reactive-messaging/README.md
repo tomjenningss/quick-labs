@@ -560,26 +560,23 @@ The following command will show you the logs for this build. Make sure to specif
 
 This logs-stream should end with **Push successful** message (the build process might take between two to three minutes to complete) and this is the indication that the image was built and has been pushed to OpenShift internal image registry.
 
-Step 5: Create a new OpenShift app from the build
-```
-oc new-app rest-quicklab
-```
+Create a new OpenShift app from the build
+
+`oc new-app mp-system`
+
+`oc new-app mp-inventory`
 
 This command creates OpenShift DeploymentConfigs and services for your application.
 
-Step 6: Exposing the app by creating a route to your application
+Expose the app by creating a route to your application
 
-```
-oc expose svc/rest-quicklab
-```
+`oc expose svc/mp-system`
+
+`oc expose svc/mp-inventory`
 
 This command ensures that your app is accessible from the internet by a public URL.
 
-Step 7: 
-
-```
-oc get routes
-```
+`oc get routes`
 
 The above command outputs the publicly accessible route to your OpenLiberty application.
 
@@ -591,13 +588,12 @@ Step 8: Troubleshooting (optional)
 
 If your application on OpenShift is not running as expected, you can run the following commands to view the logs of pods.
 
-```
-oc get pods
-```
+`oc get pods`
 
 The above command should output four pods - one for the OpenShift console itself, one application pod (e.g. rest-quicklab-1-25tgb), one build pod (e.g. rest-quicklab-1-build) and one deploy pod (rest-quicklab-1-deploy).
 
 The following command will display the logs from your application pod and the output should give you information on what might be wrong.
+
 ```
 oc logs -f rest-quicklab-1-25tgb
 ```
@@ -608,11 +604,11 @@ Step 9: Cleanup
 
 Let's clean up the resources we just created. You can execute the following commands:
 ```
-oc delete all -l app=rest-quicklab
+oc delete all -l app=mp-system
 
-oc delete builds rest-quicklab-1 
+oc delete builds mp-system-1 
 
-oc delete buildconfigs rest-quicklab
+oc delete buildconfigs my-system
 ```
 
 Note: Your app, buildconfigs and build names might be different. The following commands will help you find the exact names for your builds, buildconfigs and imagestreams.
