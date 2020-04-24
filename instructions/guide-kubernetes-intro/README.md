@@ -235,17 +235,43 @@ You can also inspect individual pods in more detail by running the following com
 
 `kubectl describe pods`
 
+This output shows the node IP which you will use to access the services. For example:
+
+```
+Name:         system-deployment-c5667f8dc-tpnff
+Namespace:    sn-labs-johndoe
+Priority:     0
+Node:         10.114.85.172/10.114.85.172
+Start Time:   Fri, 24 Apr 2020 07:45:43 +0000
+Labels:       app=system
+              pod-template-hash=c5667f8dc
+Annotations:  kubernetes.io/limit-ranger:
+                LimitRanger plugin set: cpu, ephemeral-storage, memory request for container system-container; cpu, ephemeral-storage, memory limit for co...
+              kubernetes.io/psp: ibm-privileged-psp
+Status:       Running
+```
+
+In this case, the node IP is 10.114.85.172 for the system service. Find the IP for each service and store them in variables: 
+
+`SYSTEM_HOST=`**IP for the system service**
+
+`INVENTORY_HOST=`**IP for the inventory service**
+
+Verify that they have stored correctly with the following command: 
+
+`echo $SYSTEM_HOST && echo $INVENTORY_HOST`
+
 You can also issue the **kubectl get** and **kubectl describe** commands on other Kubernetes resources, so feel free to inspect all other resources.
 
 Next you will make requests to your services.
 
 Then curl or visit the following URLs to access your microservices, substituting the appropriate host name:
 
-http://localhost:31000/system/properties
+`curl http://$SYSTEM_HOST:31000/system/properties`
 
-http://localhost:32000/inventory/systems/system-service
+`curl http://$INVENTORY_HOST:32000/inventory/systems/system-service`
 
-The first URL returns system properties and the name of the pod in an HTTP header called X-Pod-Name. To view the header, you may use the -I option in the curl when making a request to **http://localhost:31000/system/properties**. The second URL adds properties from system-service to the inventory Kubernetes Service. Visiting **http://localhost:32000/inventory/systems/** in general adds to the inventory depending on whether kube-service is a valid Kubernetes Service that can be accessed.
+The first URL returns system properties and the name of the pod in an HTTP header called X-Pod-Name. To view the header, you may use the -I option in the curl when making a request to **http://$SYSTEM_HOST:31000/system/properties**. The second URL adds properties from system-service to the inventory Kubernetes Service. Visiting **http://$INVENTORY_HOST:32000/inventory/systems/** in general adds to the inventory depending on whether kube-service is a valid Kubernetes Service that can be accessed.
 
 ## Scaling a deployment
 
@@ -267,7 +293,7 @@ system-deployment-6bd97d9bf6-x4zth      1/1       Running   0          25s
 inventory-deployment-645767664f-nbtd9   1/1       Running   0          1m
 ```
 
-Wait for your two new pods to be in the ready state, then enter `curl http://localhost:31000/system/properties`. 
+Wait for your two new pods to be in the ready state, then enter `curl http://$SYSTEM_HOST:31000/system/properties`. 
 
 You’ll notice that the X-Pod-Name header will have a different value when you call it multiple times. This is because there are now three pods running all serving the **system** application. Similarly, to descale your deployments you can use the same scale command with fewer replicas.
 
