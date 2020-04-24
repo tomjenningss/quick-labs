@@ -550,11 +550,13 @@ Execute the following command to view the available builds.
 The output will be something like this:
 | NAME  | TYPE  | FROM  | STATUS | STARTED  |  DURATION |
 |---|---|---|---|---|---|
-| mp-inventory | Docker  | Binary@7a7a2f8  | Running  | 29 seconds ago  |   |
-| mp-system    | Docker  | Binary@7a7a2f8  | Running  | 42 seconds ago  |   |                                               
+| mp-inventory-1 | Docker  | Binary@7a7a2f8  | Running  | 29 seconds ago  |   |
+| mp-system-1    | Docker  | Binary@7a7a2f8  | Running  | 42 seconds ago  |   |                                               
 The following command will show you the logs for this build. Make sure to specify the build name you see from previous command.
 
-`oc logs -f build/rest-quicklab-1`
+`oc logs -f build/mp-inventory-1`
+
+`oc logs -f build/mp-system-1`
 
 This logs-stream should end with **Push successful** message (the build process might take between two to three minutes to complete) and this is the indication that the image was built and has been pushed to OpenShift internal image registry.
 
