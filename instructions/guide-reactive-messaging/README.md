@@ -36,14 +36,9 @@ The **finish** directory contains the finished project that you will build.
 
 The **system** microservice is the producer of the messages that are published to the Kafka messaging system as a stream of events. Every 15 seconds, the **system** microservice publishes an event that contains its calculation of the average system load (its CPU usage) for the last minute.
 
-Create the **SystemService** class.
+Create the **SystemService.java file**
 
-Navigate to the **system** directory
-> `cd system/src/main/java/io/openliberty/guides/system/` 
-
-Create the **SystemService.java**
-
-`touch SystemService.java`
+`touch system/src/main/java/io/openliberty/guides/system/SystemService.java`
 
 Open **SystemService.java** by navigating to 
 
@@ -104,13 +99,9 @@ The messages are transported between the service and the Kafka messaging system 
 
 The **inventory** microservice records in its inventory the average system load information that it received from potentially multiple instances of the **system** service.
 
-Navigate to the bottom **inventory** directory
-
-`cd ../../../../../../../../inventory/src/main/java/io/openliberty/guides/inventory/` 
-
 Create **InventoryResource.java**
 
-`touch InventoryResource.java`
+`touch inventory/src/main/java/io/openliberty/guides/inventory/InventoryResource.java`
 
 [File -> Open]inventory/src/main/java/io/openliberty/guides/inventory/InventoryResource.java
 
@@ -213,13 +204,9 @@ The **system** and **inventory** services exchange messages with the external me
 The system and inventory microservices each have a MicroProfile Config properties file to define the properties of their outgoing and incoming streams.
 
 
-Navigate to **META-INF** directory
+Create the **system** **microprofile-config.properties** in the **META-INF** directory
 
-`cd ../../../../../../../../system/src/main/resources/META-INF/`
-
-Create the **system** **microprofile-config.properties**
-
-`touch microprofile-config.properties`
+`touch system/src/main/resources/META-INF/microprofile-config.properties`
 
 Open **microprofile-config.properties**
 
@@ -240,17 +227,9 @@ mp.messaging.outgoing.systemLoad.value.serializer=io.openliberty.guides.models.S
 
 The **mp.messaging.connector.liberty-kafka.bootstrap.servers** property configures the hostname and port for connecting to the Kafka server. The **system** microservice uses an outgoing connector to send messages through the **systemLoad** channel to the **systemLoadTopic** topic in the Kafka messaging-broker so that the **inventory** microservices can consume the messages. The **key.serializer** and **value.serializer** properties characterize how to serialize the messages. The **SystemLoadSerializer** class implements the logic for turning a **SystemLoad** object into JSON and is configured as the **value.serializer**.
 
-The **inventory** microservice uses a similar **microprofile-config.properties** configuration to define its required incoming stream.
+The **inventory** microservices uses a similar **microprofile-config.properties** configuration to define its required incoming stream. Create the inventory **microprofile-config.properties** file.
 
-Navigate to the **inventory** directory to create the config properties for the **inventory**
-
-`cd ../../../../../inventory/src/main/resources/META-INF/`
-
-The **inventory** microservices uses a similar **microprofile-config.properties** configuration to define its required incoming stream.
-
-Create the inventory **microprofile-config.properties** file.
-
-`touch microprofile-config.properties`
+`touch inventory/src/main/resources/META-INF/microprofile-config.properties`
 
 Open **microprofile-config.properties**
 
@@ -279,13 +258,7 @@ To run the services, the Open Liberty server on which each service runs needs to
 
 Create the **server.xml** file
 
-Navigate back to **system** **config** directory 
-
-` cd ../../../../../system/src/main/liberty/config/`
-
-Create the **server.xml**
-
-`touch server.xml`
+`touch system/src/main/liberty/config/server.xml
 
 Open the **server.xml** file 
 
@@ -321,15 +294,11 @@ The **server.xml** file is already configured for the **inventory** microservice
 
 # Building and running the application
 
-Change directories back to the top level **system** folder
-
-`cd ../../../../../system/` 
-
 Build the **system** and **inventory** microservices using Maven and then run them in Docker containers.
 
 Create the **pom.xml** file
 
-`touch pom.xml`
+`touch system/pom.xml`
 
 Open the **pom.xml** file 
 
@@ -488,14 +457,13 @@ Add the **maven** dependencies, **properties**, **plugins**, **packaging method*
 </project>
 ```
 
-
 The **Dockerfiles** are already provided for use.
 
-To build the application, run the Maven **install** and **package** goals from the command line 
+To build the application, run the Maven **install** and **package** goals from the command line:
 
 `mvn -pl models install`
 
-Package the application 
+Package the application:
 
 `mvn package`
 
@@ -511,13 +479,11 @@ Build the **system** docker image
 
 Build the **inventory** docker image
 
-docker build -t inventory:1.0-SNAPSHOT inventory/.
+`docker build -t inventory:1.0-SNAPSHOT inventory/.`
 
 Next, use the provided script to start the application in Docker containers. The script creates a network for the containers to communicate with each other. It also creates containers for Kafka, Zookeeper, and the microservices in the project. For simplicity, the script starts one instance of the system service.
 
 Start the application
-
-`cd ../scripts/`
 
 `./scripts/startContainers.sh`
 
@@ -555,6 +521,108 @@ In this example the **hostId = 30bec2b63a96**
 Finally, use the following script to stop the application:
 
 `./scripts/stopContainers.sh`
+
+# Deploying the application on OpenShift
+
+Generate the \*.war file for each service:
+
+```
+cd ../
+mvn package
+```
+
+Step 2: Create a new binary build
+```
+oc new-build --name=rest-quicklab --binary --strategy=docker
+```
+
+Step 3: Start the binary build using current directory as binary input for the build
+```
+oc start-build rest-quicklab --from-dir=.
+```
+
+Step 4: Observe the build
+
+Execute the following command to view the available builds.
+```
+oc get builds
+```
+
+The output will be something like this:
+| NAME  | TYPE  | FROM  | STATUS | STARTED  |  DURATION |
+|---|---|---|---|---|---|
+| rest-quicklab-1 | Docker  | Binary@f9c9544  | Running  | 29 seconds ago  |   |
+                                                   
+The following command will show you the logs for this build. Make sure to specify the build name you see from previous command.
+
+```
+oc logs -f build/rest-quicklab-1
+```
+
+This logs-stream should end with **Push successful** message (the build process might take between two to three minutes to complete) and this is the indication that the image was built and has been pushed to OpenShift internal image registry.
+
+Step 5: Create a new OpenShift app from the build
+```
+oc new-app rest-quicklab
+```
+
+This command creates OpenShift DeploymentConfigs and services for your application.
+
+Step 6: Exposing the app by creating a route to your application
+
+```
+oc expose svc/rest-quicklab
+```
+
+This command ensures that your app is accessible from the internet by a public URL.
+
+Step 7: 
+
+```
+oc get routes
+```
+
+The above command outputs the publicly accessible route to your OpenLiberty application.
+
+Your app URL will be something like this: rest-quicklab-sn-labs-<your-userID>.sn-labs-user-sandbox-pr-a45631dc5778dc6371c67d206ba9ae5c-0000.tor01.containers.appdomain.cloud
+  
+Navigate to that URL and you should see the OpenLiberty page that gets generated from the base image. Append "/LibertyProject" after the URL and you should see a page with "Welcome to your Liberty Application" message. Finally, "/LibertyProject/System/properties" subURL should show you a list of system properties from the machine the OpenLiberty server is running on. For best viewing result, you can install a JSON viewer tool to your browser.
+
+Step 8: Troubleshooting (optional)
+
+If your application on OpenShift is not running as expected, you can run the following commands to view the logs of pods.
+
+```
+oc get pods
+```
+
+The above command should output four pods - one for the OpenShift console itself, one application pod (e.g. rest-quicklab-1-25tgb), one build pod (e.g. rest-quicklab-1-build) and one deploy pod (rest-quicklab-1-deploy).
+
+The following command will display the logs from your application pod and the output should give you information on what might be wrong.
+```
+oc logs -f rest-quicklab-1-25tgb
+```
+
+Note: Name of your application pod might be different.
+
+Step 9: Cleanup
+
+Let's clean up the resources we just created. You can execute the following commands:
+```
+oc delete all -l app=rest-quicklab
+
+oc delete builds rest-quicklab-1 
+
+oc delete buildconfigs rest-quicklab
+```
+
+Note: Your app, buildconfigs and build names might be different. The following commands will help you find the exact names for your builds, buildconfigs and imagestreams.
+
+```
+oc get builds
+oc get buildconfigs
+oc get imagestreams
+```
 
 # Well done
 Congratulations, you now have experienced building a reactive microservice-based application using MicroProfile Reactive messaging, and experienced sending and receiving messaging between microservices within this application using Apache Kafka
