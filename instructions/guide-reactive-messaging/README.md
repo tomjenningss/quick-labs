@@ -527,9 +527,9 @@ Finally, use the following script to stop the application:
 
 Firstly, create a new binary build
 
-`cd service`
+`cd system`
 
-`oc new-build --name=mp-service --binary --strategy=docker`
+`oc new-build --name=mp-system --binary --strategy=docker`
 
 `cd ../inventory`
 
