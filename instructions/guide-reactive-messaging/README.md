@@ -258,7 +258,7 @@ To run the services, the Open Liberty server on which each service runs needs to
 
 Create the **server.xml** file
 
-`touch system/src/main/liberty/config/server.xml
+`touch system/src/main/liberty/config/server.xml`
 
 Open the **server.xml** file 
 
