@@ -153,6 +153,8 @@ spec:
         image: us.icr.io/$NAMESPACE_NAME/system:1.0-SNAPSHOT
         ports:
         - containerPort: 9080
+      imagePullSecrets:
+      - name: icr
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -174,6 +176,8 @@ spec:
         image: us.icr.io/$NAMESPACE_NAME/inventory:1.0-SNAPSHOT
         ports:
         - containerPort: 9080
+      imagePullSecrets:
+      - name: icr
 ---
 apiVersion: v1
 kind: Service
