@@ -106,6 +106,10 @@ Verify that the variable contains your namepsace name correctly:
 
 `echo $NAMESPACE_NAME`
 
+Login to the given registry with the following command:
+
+`bx cr login`
+
 Run the following commands to push the inventory images to your container registry namespace: 
 
 `docker tag inventory:1.0-SNAPSHOT us.icr.io/$NAMESPACE_NAME/inventory:1.0-SNAPSHOT`
